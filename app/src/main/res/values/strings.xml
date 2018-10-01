@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">PictureNote</string>
+    <string name="kaydet">Kaydet</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="notekle"> Not Ekle </string>
+    <string name="edit"> Düzenle </string>
+    <string name="search">Arama</string>
+    <string name="takefoto">Fotoğraf Çek</string>
+
+
+</resources>
