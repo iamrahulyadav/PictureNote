@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -50,6 +51,17 @@ public class PictureAdd extends AppCompatActivity {
 
 
         String info = intent.getStringExtra("info");
+        Bundle extras = getIntent().getExtras();
+
+
+        /*
+         byte[] byteArray = extras.getByteArray("picture");
+
+        Bitmap bmp = BitmapFactory.decodeByteArray(byteArray,0, byteArray.length);
+        imageView.setImageBitmap(bmp);
+        selectedImage = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+         */
+
 
 
         //actionbarı off yapar.
@@ -57,12 +69,8 @@ public class PictureAdd extends AppCompatActivity {
 
         if (info.equalsIgnoreCase("new") ) {
 
-            Bundle extras = getIntent().getExtras();
-            byte[] byteArray = extras.getByteArray("picture");
-
-            Bitmap bmp = BitmapFactory.decodeByteArray(byteArray,0, byteArray.length);
-            imageView.setImageBitmap(bmp);
             Bitmap background = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.background);
+            selectedImage = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
             imageView.setImageBitmap(background);
             button.setVisibility(View.VISIBLE);
 
@@ -168,7 +176,6 @@ public class PictureAdd extends AppCompatActivity {
 
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
-            finish();
 
         }else {
 

@@ -21,10 +21,13 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 
+import static android.graphics.BitmapFactory.decodeByteArray;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -78,14 +81,22 @@ public class MainActivity extends AppCompatActivity {
 
         if(requestCode == 5){
 
-            Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.ic_photo_camera);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
+            try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
-            Intent intent = new Intent(MainActivity.this, PictureAdd.class);
-            intent.putExtra("new", byteArray);
-            startActivity(intent);
+                byte[] byteArray;
+
+                selectedImage.compress(Bitmap.CompressFormat.PNG, 50, byteArrayOutputStream);
+                byteArray = byteArrayOutputStream.toByteArray();
+                Intent i = new Intent(getApplicationContext(), PictureAdd.class);
+                i.putExtra("new", byteArray);
+                startActivity(i);
+
+
+            } catch (Exception e){
+                e.printStackTrace();
+
+
+            }
 
         } else if (requestCode == RESULT_CANCELED){
 
@@ -131,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
             byte[] byteArray = cursor.getBlob(imageIX);
 
-            Bitmap image = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+            Bitmap image = decodeByteArray(byteArray, 0, byteArray.length);
             PictureAd.add(image);
             cursor.moveToNext();
 
