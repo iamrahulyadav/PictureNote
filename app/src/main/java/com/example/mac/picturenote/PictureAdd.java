@@ -181,7 +181,7 @@ public class PictureAdd extends AppCompatActivity {
 
        // }else {
 
-            Toast.makeText(PictureAdd.this, "Lütfen Boşlukları Doldurunuz", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(PictureAdd.this, "Lütfen Boşlukları Doldurunuz", Toast.LENGTH_SHORT).show();
         //}
 
 
