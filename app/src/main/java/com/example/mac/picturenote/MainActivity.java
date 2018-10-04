@@ -21,10 +21,6 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
 
 import static android.graphics.BitmapFactory.decodeByteArray;
@@ -32,7 +28,6 @@ import static android.graphics.BitmapFactory.decodeByteArray;
 
 public class MainActivity extends AppCompatActivity {
 
-    Bitmap selectedImage;
     ImageView imageView;
 
     static ArrayList<Bitmap> PictureAd;
@@ -60,50 +55,13 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
 
-        if(item.getItemId() == R.id.take_picture){
 
-            Intent i = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-
-            startActivityForResult(i,5);
-
-        }
 
         if(item.getItemId() == R.id.app_bar_search){
 
         }
         return super.onOptionsItemSelected(item);
 
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-
-        if(requestCode == 5){
-
-            try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-
-                byte[] byteArray;
-
-                selectedImage.compress(Bitmap.CompressFormat.PNG, 50, byteArrayOutputStream);
-                byteArray = byteArrayOutputStream.toByteArray();
-                Intent i = new Intent(getApplicationContext(), PictureAdd.class);
-                i.putExtra("new", byteArray);
-                startActivity(i);
-
-
-            } catch (Exception e){
-                e.printStackTrace();
-
-
-            }
-
-        } else if (requestCode == RESULT_CANCELED){
-
-            Toast.makeText(getApplicationContext(),
-                    "Kamera Desteklemiyor yada ilem iptal",
-                    Toast.LENGTH_LONG).show();
-        }
     }
 
     @Override

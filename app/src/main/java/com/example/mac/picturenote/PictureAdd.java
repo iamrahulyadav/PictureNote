@@ -16,6 +16,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -36,7 +38,6 @@ public class PictureAdd extends AppCompatActivity {
 
 
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture_add);
@@ -51,26 +52,17 @@ public class PictureAdd extends AppCompatActivity {
 
 
         String info = intent.getStringExtra("info");
-        Bundle extras = getIntent().getExtras();
-
-
-        /*
-         byte[] byteArray = extras.getByteArray("picture");
-
-        Bitmap bmp = BitmapFactory.decodeByteArray(byteArray,0, byteArray.length);
-        imageView.setImageBitmap(bmp);
-        selectedImage = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-         */
 
 
 
         //actionbarı off yapar.
         this.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+
+        //listviewda kaydedilen veriyi pictureadda  açar. eğer yeniyse.
         if (info.equalsIgnoreCase("new") ) {
 
             Bitmap background = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.background);
-            selectedImage = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
             imageView.setImageBitmap(background);
             button.setVisibility(View.VISIBLE);
 
@@ -133,11 +125,24 @@ public class PictureAdd extends AppCompatActivity {
             Uri image = data.getData();
             try {
                 selectedImage= MediaStore.Images.Media.getBitmap(this.getContentResolver(), image);
-
                 imageView.setImageBitmap(selectedImage);
             } catch (IOException e) {
                 e.printStackTrace();
+
             }
+
+        }
+        if(requestCode == 5){
+
+            Bitmap image = (Bitmap)data.getExtras().get("data");
+            imageView.setImageBitmap(image);
+            finish();
+
+        } else if (requestCode == RESULT_CANCELED){
+
+            Toast.makeText(getApplicationContext(),
+                    "Kamera Desteklemiyor yada ilem iptal",
+                    Toast.LENGTH_LONG).show();
         }
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -155,7 +160,7 @@ public class PictureAdd extends AppCompatActivity {
         selectedImage.compress(Bitmap.CompressFormat.PNG, 50, outputStream);
         byte[] byteArray = outputStream.toByteArray();
 
-        if(editText.getText().toString().trim().length() == 1 && editText2.getText().toString().trim().length() ==1 ) {
+        //if(editText.getText().toString().trim().length() == 1 && editText2.getText().toString().trim().length() ==1 ) {
             try
             {
                 database = this.openOrCreateDatabase("Picture", MODE_PRIVATE, null);
@@ -169,18 +174,20 @@ public class PictureAdd extends AppCompatActivity {
                 statement.bindString(3, pictureNote);
                 statement.execute();
 
-            }    catch (Exception e) {
+            }   catch (Exception e) {
 
                 e.printStackTrace();
             }
 
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-
-        }else {
+       // }else {
 
             Toast.makeText(PictureAdd.this, "Lütfen Boşlukları Doldurunuz", Toast.LENGTH_SHORT).show();
-        }
+        //}
+
+
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+        finish();
 
     }
 
@@ -192,6 +199,25 @@ public class PictureAdd extends AppCompatActivity {
             Intent i = new Intent(getApplicationContext(),MainActivity.class);
             startActivity(i);
         }
+
+        if (item.getItemId() == R.id.take_picture){
+
+            Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+            startActivityForResult(i, 5);
+
+        }
         return super.onOptionsItemSelected(item);
+
+    }
+    //menü ekleme
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.add_camera,menu);
+
+        return super.onCreateOptionsMenu(menu);
     }
 }

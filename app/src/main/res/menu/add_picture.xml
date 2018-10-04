@@ -3,35 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/take_picture"
-        android:icon="@drawable/ic_photo_camera"
-        android:title="@string/takefoto"
-        app:showAsAction="always">
 
-    </item>
+        <item
+            android:id="@+id/add_picture"
+            android:enabled="true"
+            android:icon="@drawable/ic_note_add_black_24dp"
+            android:title="@string/notekle"
+            android:visible="true"
+            app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/add_picture"
-        android:icon="@drawable/ic_note_add_black_24dp"
-        android:title="@string/notekle"
-        app:showAsAction="ifRoom" />
-    
 
-    <item
-        android:id="@+id/noteEdit"
-        android:icon="@drawable/ic_edit_black_24dp"
-        android:title="@string/edit"
-        app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/noteEdit"
+            android:checkable="false"
+            android:enabled="true"
+            android:icon="@drawable/ic_edit_black_24dp"
+            android:title="@string/edit"
+            android:visible="true"
+            app:showAsAction="ifRoom" />
 
 
 
-    <item
-        android:id="@+id/app_bar_search"
-        android:icon="@drawable/ic_search_black_24dp"
-        android:title="@string/search"
-        app:actionViewClass="android.widget.SearchView"
-        app:showAsAction="always" />
+        <item
+            android:id="@+id/app_bar_search"
+            android:icon="@drawable/ic_search_black_24dp"
+            android:title="@string/search"
+            app:actionViewClass="android.widget.SearchView"
+            app:showAsAction="always" />
+
 
 
 </menu>
