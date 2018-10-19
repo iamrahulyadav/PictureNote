@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,6 +23,9 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
+import java.io.File;
 import java.util.ArrayList;
 
 import static android.graphics.BitmapFactory.decodeByteArray;
@@ -29,6 +34,9 @@ import static android.graphics.BitmapFactory.decodeByteArray;
 public class MainActivity extends AppCompatActivity {
 
     ImageView imageView;
+    static SQLiteDatabase database;
+
+
 
     static ArrayList<Bitmap> PictureAd;
     //menuinflater ile menuyu çıkartmayı mainacitiviye tanımladık.
@@ -55,17 +63,16 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
 
-
-
         if(item.getItemId() == R.id.app_bar_search){
+
 
         }
         return super.onOptionsItemSelected(item);
+     }
 
-    }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+       @Override
+        protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -79,13 +86,15 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setAdapter(arrayAdapter);
 
-        try {
+
+           try {
 
 
         PictureAdd.database = this.openOrCreateDatabase("Picture",  MODE_PRIVATE, null);
         PictureAdd.database.execSQL("CREATE TABLE IF NOT EXISTS picture (name VARCHAR, image BLOB, text VARCHAR) ");
 
         Cursor cursor = PictureAdd.database.rawQuery("SELECT  * FROM picture", null);
+
 
         int nameIx = cursor.getColumnIndex("name");
         int imageIX = cursor.getColumnIndex("image");
@@ -101,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             byte[] byteArray = cursor.getBlob(imageIX);
 
             Bitmap image = decodeByteArray(byteArray, 0, byteArray.length);
+
             PictureAd.add(image);
             cursor.moveToNext();
 
@@ -129,6 +139,17 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+
+           listView.setOnLongClickListener(new View.OnLongClickListener() {
+               @Override
+               public boolean onLongClick(View v) {
+
+
+
+                   return false;
+               }
+           });
 
 
     }

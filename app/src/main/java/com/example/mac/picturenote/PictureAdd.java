@@ -2,13 +2,16 @@ package com.example.mac.picturenote;
 
 import android.Manifest;
 import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.drawable.BitmapDrawable;
+import android.hardware.camera2.CameraDevice;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -16,6 +19,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatImageHelper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,8 +29,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.GlideBuilder;
+
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
 
 public class PictureAdd extends AppCompatActivity {
 
@@ -49,6 +60,8 @@ public class PictureAdd extends AppCompatActivity {
 
         Button  button= (Button) findViewById(R.id.button);
         Intent intent = getIntent();
+
+        initBackroundImage();
 
 
         String info = intent.getStringExtra("info");
@@ -134,9 +147,9 @@ public class PictureAdd extends AppCompatActivity {
         }
         if(requestCode == 5){
 
-            Bitmap image = (Bitmap)data.getExtras().get("data");
+            Bitmap image  = (Bitmap)data.getExtras().get("data");
+
             imageView.setImageBitmap(image);
-            finish();
 
         } else if (requestCode == RESULT_CANCELED){
 
@@ -154,13 +167,23 @@ public class PictureAdd extends AppCompatActivity {
         String pictureName =editText.getText().toString();
         String pictureNote = editText2.getText().toString();
 
+
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
-        selectedImage.compress(Bitmap.CompressFormat.PNG, 50, outputStream);
+        selectedImage.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+
         byte[] byteArray = outputStream.toByteArray();
 
-        //if(editText.getText().toString().trim().length() == 1 && editText2.getText().toString().trim().length() ==1 ) {
+        if(editText.getText().toString().trim().length() == 0 && editText2.getText().toString().trim().length() ==0  ) {
+
+            Toast.makeText(PictureAdd.this, "Lütfen Boşlukları Doldurunuz", Toast.LENGTH_SHORT).show();
+
+
+        } else
+
+        {
             try
             {
                 database = this.openOrCreateDatabase("Picture", MODE_PRIVATE, null);
@@ -174,20 +197,17 @@ public class PictureAdd extends AppCompatActivity {
                 statement.bindString(3, pictureNote);
                 statement.execute();
 
+
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+                finish();
+
             }   catch (Exception e) {
 
                 e.printStackTrace();
             }
 
-       // }else {
-
-            //Toast.makeText(PictureAdd.this, "Lütfen Boşlukları Doldurunuz", Toast.LENGTH_SHORT).show();
-        //}
-
-
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        startActivity(intent);
-        finish();
+        }
 
     }
 
@@ -204,6 +224,8 @@ public class PictureAdd extends AppCompatActivity {
 
             Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
+
+
             startActivityForResult(i, 5);
 
         }
@@ -219,5 +241,19 @@ public class PictureAdd extends AppCompatActivity {
         menuInflater.inflate(R.menu.add_camera,menu);
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+
+    private void initBackroundImage(){
+
+        ImageView background = findViewById(R.id.imageView);
+
+        //Glide.with(getApplicationContext()).load(Camera()).into(imageView);
+
+        Glide.with(this)
+                .load(R.drawable.background)
+                .into(background);
+
+
     }
 }
