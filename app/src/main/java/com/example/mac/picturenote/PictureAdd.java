@@ -1,25 +1,21 @@
 package com.example.mac.picturenote;
 
 import android.Manifest;
-import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Camera;
-import android.graphics.drawable.BitmapDrawable;
-import android.hardware.camera2.CameraDevice;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.AppCompatImageHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,30 +26,36 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.GlideBuilder;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class PictureAdd extends AppCompatActivity {
 
-    ImageView imageView;
+    ImageView mImageView;
     EditText editText;
     EditText editText2;
     Bitmap selectedImage;
     static SQLiteDatabase database;
 
+    //SEMIH
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+    private Bitmap mImageBitmap;
+    private String mCurrentPhotoPath;
+
+    /////
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture_add);
 
-        imageView = (ImageView)  findViewById(R.id.imageView);
+        mImageView = (ImageView)  findViewById(R.id.imageView);
         editText = (EditText) findViewById(R.id.editText);
         editText2 = (EditText) findViewById(R.id.editText2);
 
@@ -62,11 +64,9 @@ public class PictureAdd extends AppCompatActivity {
         Intent intent = getIntent();
 
         initBackroundImage();
-
+        isStoragePermissionGranted();
 
         String info = intent.getStringExtra("info");
-
-
 
         //actionbarı off yapar.
         this.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -76,7 +76,7 @@ public class PictureAdd extends AppCompatActivity {
         if (info.equalsIgnoreCase("new") ) {
 
             Bitmap background = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.background);
-            imageView.setImageBitmap(background);
+            mImageView.setImageBitmap(background);
             button.setVisibility(View.VISIBLE);
 
         }else {
@@ -87,8 +87,8 @@ public class PictureAdd extends AppCompatActivity {
             editText2.setText(text);
             int i  = intent.getIntExtra("i", 0);
 
-            imageView.setImageBitmap(MainActivity.PictureAd.get(i));
-            imageView.setVisibility(View.VISIBLE);
+            mImageView.setImageBitmap(MainActivity.PictureAd.get(i));
+            mImageView.setVisibility(View.VISIBLE);
             button.setVisibility(View.INVISIBLE);
 
         }
@@ -99,12 +99,13 @@ public class PictureAdd extends AppCompatActivity {
 
         //izin verilmedi ise bu kod yazılır. kullanıcdan izin isetemek için.
 
-        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED){
 
             requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, 2);
 
 
-        } else
+        }
+        else
         //izin varsa bu kod çalışır.
         {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -117,9 +118,9 @@ public class PictureAdd extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode ==2 ){
+        if (requestCode == 2 ){
 
-            if(grantResults.length  >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            if(grantResults.length  >0 && grantResults[0] == PERMISSION_GRANTED){
 
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 //bir sonuç için intent yapılıyor.
@@ -135,23 +136,18 @@ public class PictureAdd extends AppCompatActivity {
 
         if(requestCode ==1 && resultCode== RESULT_OK && data != null){
 
-            Uri image = data.getData();
-            try {
-                selectedImage= MediaStore.Images.Media.getBitmap(this.getContentResolver(), image);
-                imageView.setImageBitmap(selectedImage);
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
 
         }
-        if(requestCode == 5){
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            try {
+                mImageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(mCurrentPhotoPath));
+                mImageView.setImageBitmap(mImageBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-            Bitmap image  = (Bitmap)data.getExtras().get("data");
-
-            imageView.setImageBitmap(image);
-
-        } else if (requestCode == RESULT_CANCELED){
+        else if (requestCode == RESULT_CANCELED){
 
             Toast.makeText(getApplicationContext(),
                     "Kamera Desteklemiyor yada ilem iptal",
@@ -162,12 +158,8 @@ public class PictureAdd extends AppCompatActivity {
     }
 
     public void save (View view){
-
-
         String pictureName =editText.getText().toString();
         String pictureNote = editText2.getText().toString();
-
-
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -179,7 +171,6 @@ public class PictureAdd extends AppCompatActivity {
         if(editText.getText().toString().trim().length() == 0 && editText2.getText().toString().trim().length() ==0  ) {
 
             Toast.makeText(PictureAdd.this, "Lütfen Boşlukları Doldurunuz", Toast.LENGTH_SHORT).show();
-
 
         } else
 
@@ -220,20 +211,68 @@ public class PictureAdd extends AppCompatActivity {
             startActivity(i);
         }
 
-        if (item.getItemId() == R.id.take_picture){
+        if(item.getItemId() == R.id.take_picture) {
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-            Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-
-
-            startActivityForResult(i, 5);
-
+            if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+                // Create the File where the photo should go
+                File photoFile = null;
+                try {
+                    photoFile = createImageFile();
+                } catch (IOException ex) {
+                    // Error occurred while creating the File
+                    Log.i("LOG", "IOException");
+                }
+                // Continue only if the File was successfully created
+                if (photoFile != null) {
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                    startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
+                }
+            }
         }
+
         return super.onOptionsItemSelected(item);
 
     }
-    //menü ekleme
 
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v("TAG","Permission is granted");
+                return true;
+            } else {
+
+                Log.v("TAG","Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("TAG","Permission is granted");
+            return true;
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  // prefix
+                ".jpg",         // suffix
+                storageDir      // directory
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        return image;
+    }
+
+
+    //menü ekleme
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -248,7 +287,7 @@ public class PictureAdd extends AppCompatActivity {
 
         ImageView background = findViewById(R.id.imageView);
 
-        //Glide.with(getApplicationContext()).load(Camera()).into(imageView);
+        //Glide.with(getApplicationContext()).load(Camera()).into(mImageView);
 
         Glide.with(this)
                 .load(R.drawable.background)

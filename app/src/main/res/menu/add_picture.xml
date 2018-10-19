@@ -10,7 +10,7 @@
         />
 
     <item
-       android:id="@+id/edit"
+        android:id="@+id/edit"
         android:icon="@drawable/ic_edit_black_24dp"
         android:title="@string/edit"/>
 
