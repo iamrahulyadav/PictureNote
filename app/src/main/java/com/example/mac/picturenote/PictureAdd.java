@@ -34,10 +34,15 @@ import com.bumptech.glide.GlideBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.util.Objects;
 
 public class PictureAdd extends AppCompatActivity {
 
@@ -60,13 +65,8 @@ public class PictureAdd extends AppCompatActivity {
 
         Button  button= (Button) findViewById(R.id.button);
         Intent intent = getIntent();
-
         initBackroundImage();
-
-
         String info = intent.getStringExtra("info");
-
-
 
         //actionbarı off yapar.
         this.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -92,17 +92,15 @@ public class PictureAdd extends AppCompatActivity {
             button.setVisibility(View.INVISIBLE);
 
         }
-    }
 
-    public void select (View view){
+  }
 
-
+         public void select (View view){
         //izin verilmedi ise bu kod yazılır. kullanıcdan izin isetemek için.
 
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
 
             requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, 2);
-
 
         } else
         //izin varsa bu kod çalışır.
@@ -113,7 +111,7 @@ public class PictureAdd extends AppCompatActivity {
             startActivityForResult(intent, 1);
         }
 
-    }
+        }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -138,18 +136,23 @@ public class PictureAdd extends AppCompatActivity {
             Uri image = data.getData();
             try {
                 selectedImage= MediaStore.Images.Media.getBitmap(this.getContentResolver(), image);
+
                 imageView.setImageBitmap(selectedImage);
+
+
             } catch (IOException e) {
                 e.printStackTrace();
-
             }
-
         }
         if(requestCode == 5){
 
-            Bitmap image  = (Bitmap)data.getExtras().get("data");
 
-            imageView.setImageBitmap(image);
+            Bitmap  imagek = (Bitmap) data.getExtras().get("data");
+
+
+            imageView.setImageBitmap(imagek);
+
+
 
         } else if (requestCode == RESULT_CANCELED){
 
@@ -163,23 +166,28 @@ public class PictureAdd extends AppCompatActivity {
 
     public void save (View view){
 
-
         String pictureName =editText.getText().toString();
         String pictureNote = editText2.getText().toString();
 
 
+        imageView.setDrawingCacheEnabled(true);
+        imageView.buildDrawingCache();
+
+        Bitmap bitmap = imageView.getDrawingCache();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 
-        selectedImage.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream);
+
+
 
         byte[] byteArray = outputStream.toByteArray();
 
-        if(editText.getText().toString().trim().length() == 0 && editText2.getText().toString().trim().length() ==0  ) {
+
+        if(editText.getText().toString().trim().length() == 0 || editText2.getText().toString().trim().length() ==0  ) {
 
             Toast.makeText(PictureAdd.this, "Lütfen Boşlukları Doldurunuz", Toast.LENGTH_SHORT).show();
-
 
         } else
 
@@ -197,19 +205,17 @@ public class PictureAdd extends AppCompatActivity {
                 statement.bindString(3, pictureNote);
                 statement.execute();
 
-
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
-                finish();
-
-            }   catch (Exception e) {
+            }  catch (Exception e) {
 
                 e.printStackTrace();
             }
 
-        }
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
 
-    }
+        }
+     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -223,16 +229,13 @@ public class PictureAdd extends AppCompatActivity {
         if (item.getItemId() == R.id.take_picture){
 
             Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-
-
             startActivityForResult(i, 5);
 
         }
         return super.onOptionsItemSelected(item);
 
     }
-    //menü ekleme
+     //menü ekleme
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -243,17 +246,14 @@ public class PictureAdd extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-
     private void initBackroundImage(){
 
         ImageView background = findViewById(R.id.imageView);
 
-        //Glide.with(getApplicationContext()).load(Camera()).into(imageView);
+        Glide.with(getApplicationContext()).load(CAMERA_SERVICE).into(imageView);
 
         Glide.with(this)
                 .load(R.drawable.background)
                 .into(background);
-
-
     }
 }
